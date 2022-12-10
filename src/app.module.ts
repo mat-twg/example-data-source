@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppService } from './app.service';
 import { ZmqPubSubClient, ZmqSocketType } from './zmq';
+import { EntityModule } from './entity/entity.module';
 
 @Module({
   imports: [
@@ -9,6 +10,7 @@ import { ZmqPubSubClient, ZmqSocketType } from './zmq';
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
     }),
+    EntityModule,
   ],
   providers: [
     {

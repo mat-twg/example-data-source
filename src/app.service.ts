@@ -1,11 +1,21 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ZmqPubSubClient } from './zmq';
+import { EntityService } from './entity/entity.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class AppService {
+export class AppService implements OnApplicationBootstrap {
+  private readonly frequency: number;
+
   constructor(
     @Inject('APP_SERVICE') private readonly publisher: ZmqPubSubClient,
+    private readonly entityService: EntityService,
+    private readonly configService: ConfigService,
   ) {
+    this.frequency = configService.get('SERVICE_FREQUENCY') || 1000;
+  }
+
+  onApplicationBootstrap(): any {
     this.publisher.bind();
     this.start();
   }
@@ -13,8 +23,11 @@ export class AppService {
   start(): void {
     setInterval(async () => {
       this.publisher
-        .send('test', 'app service publisher message at channel: test')
+        .send(
+          'data-source',
+          JSON.stringify(this.entityService.getRandomEntity().getDto()),
+        )
         .subscribe();
-    }, 1000);
+    }, this.frequency);
   }
 }
